@@ -1,0 +1,147 @@
+{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9\{\par
+  "project": "mycampusview",\par
+  "instruction_type": "SAFE_NON_DESTRUCTIVE_FEATURE_EXPANSION",\par
+  "target_agent": "Cursor Composer / Agent Mode",\par
+  "EXECUTION_SAFETY_AND_ROLLBACK_CONTRACT": \{\par
+    "zero_regression_rule": "DO NOT modify or delete existing working endpoints, schemas, or UI components. All new features must be purely additive.",\par
+    "cursor_checkpoint_directive": "Before modifying or creating any file, verify a clean Cursor working checkpoint. Do not bundle destructive changes.",\par
+    "file_isolation_strategy": [\par
+      "Keep existing student/profile files intact. Implement the new drilldown ledger, vendor 360, expense book, and workflows as separate, dedicated components (e.g., in a `/modules/accounting/` or `/components/tally-accounting/` directory).",\par
+      "Do NOT overwrite existing Prisma/ORM schema files directly. Provide non-breaking schema extensions (new models, optional nullable foreign keys) or safe migration patches.",\par
+      "Wrap new UI triggers (such as clickable ledger links or approval workflows) behind an optional Feature Flag or safe fallback toggle (defaulting safely if data is missing or unset)."\par
+    ],\par
+    "reversion_readiness": "Every edit must be cleanly reversible using Cursor's 'Reject All' or 'Restore Checkpoint' controls without leaving broken import references or dangling exports in existing files."\par
+  \},\par
+  "accounting_framework": \{\par
+    "standard": "Double-Entry Bookkeeping aligning with Tally ERP / TallyPrime rules",\par
+    "design_system": "Consistent with existing Student 360 metric card UI (Tailwind CSS, border-gray-100, soft rounded-xl cards)"\par
+  \},\par
+  "modules": [\par
+    \{\par
+      "module_id": "MODULE_1_STUDENT_360_FEES_DRILLDOWN",\par
+      "scope": "Additive link on current fees card to open deep ledger drilldown",\par
+      "requirements": \{\par
+        "ui": [\par
+          "Preserve the current Student 360 'Fees' card layout.",\par
+          "Convert the static outstanding amount into a clickable link that opens a 'Student Ledger / Statement of Accounts' modal or sliding drawer.",\par
+          "Add a Financial Year (FY) dropdown: Options include 'All Years (Default Cumulative)' and past 3 individual FYs.",\par
+          "Default view shows Net Outstanding Balance (Current FY Dues + Arrears / Brought Forward dues from previous FYs)."\par
+        ],\par
+        "accounting_logic": [\par
+          "Display Opening Balance (Arrears B/F from prior years).",\par
+          "Standard Tally format: Date, Particulars/Voucher Type, Voucher No, Debit (Charges/Fee Demands), Credit (Payments/Receipts), and Running Closing Balance (Dr/Cr).",\par
+          "Every aggregated sum must be clickable to reveal line-item breakdowns (e.g., Tuition, Transport, Late Fines)."\par
+        ]\par
+      \}\par
+    \},\par
+    \{\par
+      "module_id": "MODULE_2_SUNDRY_CREDITORS_VENDOR_360",\par
+      "scope": "New dedicated Vendor 360 view for school suppliers and payables",\par
+      "requirements": \{\par
+        "tally_nomenclature": \{\par
+          "vendor_directory": "Sundry Creditors (Vendor 360)",\par
+          "invoice": "Purchase Voucher",\par
+          "rejection_or_defect": "Debit Note (Purchase Return / Rejection Outward under Sec 34)",\par
+          "rebate_settlement": "Write-off / Discount Allowed / Dispute Adjustment",\par
+          "outstanding": "Bills Payable (Bill-wise Outstanding)"\par
+        \},\par
+        "features": [\par
+          "Vendor profile storing contact details, GSTIN, PAN, and credit terms.",\par
+          "Bill-wise Outstanding ledger with drilldown into underlying purchase vouchers.",\par
+          "Debit Note workflow: If goods are damaged/rotten upon inspection, generate a Debit Note linked to the original Purchase Voucher reference, reducing liabilities.",\par
+          "Summary metrics: Total Invoiced, Total Settled, Total Debit Notes, Net Liability."\par
+        ]\par
+      \}\par
+    \},\par
+    \{\par
+      "module_id": "MODULE_3_EXPENSE_DAY_BOOK_AND_TRACKER",\par
+      "scope": "Daily expense recording and petty cash tracking",\par
+      "requirements": \{\par
+        "tally_nomenclature": "Day Book / Cash-Bank Payment Register / Journal Register",\par
+        "features": [\par
+          "Daily entry register recording operational expenses by Account Head (e.g., Repairs & Maintenance, Printing, Utilities).",\par
+          "Supports Payment Modes (Cash, Bank Transfer, Cheque, UPI) and bill/receipt document attachments.",\par
+          "Auto-posts debit to nominal expense ledger and credit to Cash/Bank account."\par
+        ]\par
+      \}\par
+    \},\par
+    \{\par
+      "module_id": "MODULE_4_INVENTORY_FIXED_ASSETS_WDV",\par
+      "scope": "Asset depreciation management",\par
+      "requirements": \{\par
+        "tally_nomenclature": "Fixed Assets Register (Written Down Value Depreciation)",\par
+        "features": [\par
+          "Asset registration: Asset ID, Category, Capitalization Date, Historical Cost.",\par
+          "Automate Written Down Value (WDV / Reducing Balance) periodic depreciation calculations.",\par
+          "Current Book Value = Opening WDV - Depreciation Expense for period.",\par
+          "Generates corresponding depreciation journal entries."\par
+        ]\par
+      \}\par
+    \},\par
+    \{\par
+      "module_id": "MODULE_5_FIVE_STAGE_EXPENSE_APPROVAL_AND_PROVISIONAL_PL",\par
+      "scope": "Multi-tier approval pipeline with provisional P&L reflection",\par
+      "requirements": \{\par
+        "stages": [\par
+          "Stage 1: Creator (Draft voucher)",\par
+          "Stage 2: Validator (Accounts audit & budget match)",\par
+          "Stage 3: Approver L1 (Department Head / Admin Officer)",\par
+          "Stage 4: Approver L2 (Bursar / Finance Officer)",\par
+          "Stage 5: Final Approver (Principal / Management Trustee)"\par
+        ],\par
+        "workflow_behavior": [\par
+          "Include a switch: 'Trigger Multi-Tier Approval Workflow' (Default: False). Untoggled entries post immediately as standard entries.",\par
+          "Status flow: DRAFT -> VALIDATED -> APPROVED_L1 -> APPROVED_L2 -> FINAL_APPROVED -> POSTED.",\par
+          "Visual interactive approval tracker with remarks and status badges.",\par
+          "Role-based action gates for each step."\par
+        ],\par
+        "tally_provisional_posting": \{\par
+          "tally_nomenclature": "Optional / Provisional Voucher Posting in Income & Expenditure Account (Profit & Loss Statement)",\par
+          "rules": [\par
+            "Expenses pending approval (Stages 1-4) must NOT alter finalized general ledgers, but MUST appear provisionally in the P&L / Income & Expenditure statement under a 'Provisional / Unapproved Liabilities' scenario toggle.",\par
+            "Users can toggle between 'Standard / Actuals Only' and 'Include Provisional (Under Approval)'.",\par
+            "When toggled, unapproved items show as tagged line items (e.g., 'Repairs - [Provisional]'), dynamically recalculating projected Surplus/Deficit (Net Profit/Loss).",\par
+            "Clicking any provisional sum opens its pending approval record.",\par
+            "Upon Stage 5 approval, voucher converts to regular 'POSTED', updating the audited books."\par
+          ]\par
+        \}\par
+      \}\par
+    \},\par
+    \{\par
+      "module_id": "MODULE_6_LIGHTWEIGHT_BI_ANALYTICS_WIDGETS",\par
+      "scope": "PowerBI-style visual dashboards optimized for minimal cloud compute",\par
+      "requirements": \{\par
+        "performance_guardrails": [\par
+          "No expensive real-time aggregations on live transactional tables.",\par
+          "Use indexed summary rollups, materialized views, or client-side caching (React Query / SWR / TanStack Query)."\par
+        ],\par
+        "features": [\par
+          "Visual analytics widgets: Cash Flow Breakdown, Dues Aging Analysis (0-30, 31-60, 60+ days), Head-wise Expense Distribution, Asset WDV Trends.",\par
+          "Click-to-Drilldown: Clicking any visual slice or total opens an audit pane explaining how the value was calculated."\par
+        ]\par
+      \}\par
+    \},\par
+    \{\par
+      "module_id": "MODULE_7_WHATSAPP_AUTOMATION_INTEGRATION",\par
+      "scope": "Automated WhatsApp alerts for ERP events via Official Cloud API or AiSensy",\par
+      "requirements": \{\par
+        "features": [\par
+          "Implement API webhooks to trigger automated WhatsApp messages when specific ERP events occur (e.g., fee payment confirmed, student marked absent)[cite: 2].",\par
+          "For fee receipts, automatically trigger a 'Utility' category template message the moment a payment is marked as 'Paid'[cite: 2].",\par
+          "Ensure the webhook payload includes necessary dynamic variables to populate WhatsApp templates (e.g., student name, amount paid, download receipt link)[cite: 2].",\par
+          "Design the backend service to allow easy swapping of the WhatsApp provider (e.g., abstract the HTTP calls so the school can choose the Official WhatsApp Cloud API for lowest cost or AiSensy for a shared team inbox and dashboard)[cite: 2]."\par
+        ]\par
+      \}\par
+    \}\par
+  ],\par
+  "implementation_rules": [\par
+    "1. Introduce new database models with optional foreign keys to ensure backward compatibility.",\par
+    "2. Place all new UI views in self-contained components.",\par
+    "3. Do not modify existing API routes; create `/api/accounting/*` endpoints for new operations.",\par
+    "4. Ensure that if this generation is rolled back, the existing Student 360 profile functions without errors."\par
+  ]\par
+\}\par
+}
+ 
